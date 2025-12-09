@@ -50,29 +50,3 @@ try {
         'detail' => $e->getMessage(),
     ]);
 }
-
-/*
-Contoh Request:
-POST /api/auth/logout
-Header: Authorization: Bearer 2f5a...
-
-Response Sukses (200):
-{
-    "status": "success",
-    "code": 200,
-    "message": "Logout berhasil.",
-    "data": {
-        "revoked_token": "2f5a..."
-    },
-    "errors": []
-}
-
-Response Error (401):
-{
-    "status": "error",
-    "code": 401,
-    "message": "Token tidak ditemukan.",
-    "data": [],
-    "errors": [{"reason": "missing_token"}]
-}
-*/

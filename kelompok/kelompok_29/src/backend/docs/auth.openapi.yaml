@@ -86,6 +86,114 @@ paths:
                     errors:
                       - field: identifier
                         message: Field wajib diisi.
+  /auth/register:
+    post:
+      operationId: authRegister
+      summary: AUTH-03 Registrasi pelapor
+      description: >-
+        Membuat akun pelapor (role warga) baru dengan data identitas dasar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [full_name, email, password, confirm_password, phone, address, nik]
+              properties:
+                full_name:
+                  type: string
+                  example: Warga Baru
+                email:
+                  type: string
+                  format: email
+                  example: warga@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: passwordku
+                confirm_password:
+                  type: string
+                  format: password
+                  example: passwordku
+                  description: Harus sama dengan field password.
+                phone:
+                  type: string
+                  example: '081200011122'
+                address:
+                  type: string
+                  example: Jl. Merdeka No. 1
+                nik:
+                  type: string
+                  description: 16 digit angka sesuai Dukcapil
+                  minLength: 16
+                  maxLength: 16
+                  example: '3271010101010001'
+      responses:
+        '201':
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseRegister'
+              examples:
+                success:
+                  value:
+                    status: success
+                    code: 201
+                    message: Pelapor berhasil terdaftar.
+                    data:
+                      user_id: 7f075a04-50af-4da3-b2a1-44a9d4c66988
+                      role: warga
+                      nik: '3271010101010001'
+                    errors: []
+        '409':
+          description: Email sudah terdaftar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateEmail:
+                  value:
+                    status: error
+                    code: 409
+                    message: Email sudah terdaftar.
+                    data: []
+                    errors:
+                      - field: email
+                        message: Gunakan email lain atau lakukan login.
+                duplicateNik:
+                  value:
+                    status: error
+                    code: 409
+                    message: NIK sudah terdaftar.
+                    data: []
+                    errors:
+                      - field: nik
+                        message: Gunakan NIK lain atau hubungi admin.
+        '422':
+          description: Validasi gagal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                confirmPasswordMismatch:
+                  value:
+                    status: error
+                    code: 422
+                    message: Validasi gagal.
+                    data: []
+                    errors:
+                      - field: confirm_password
+                        message: Konfirmasi password harus sama.
+        '500':
+          description: Gangguan server/database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/logout:
     post:
       operationId: authLogout
@@ -179,6 +287,28 @@ components:
           type: object
           properties:
             revoked_token:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+    SuccessResponseRegister:
+      type: object
+      properties:
+        status:
+          type: string
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+            role:
+              type: string
+            nik:
               type: string
         errors:
           type: array

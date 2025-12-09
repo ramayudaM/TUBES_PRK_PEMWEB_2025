@@ -61,38 +61,3 @@ try {
         'detail' => $e->getMessage(),
     ]);
 }
-
-/*
-Contoh Request:
-POST /api/auth/login
-{
-    "identifier": "warga@example.com",
-    "password": "sangat-rahasia"
-}
-
-Contoh Response Sukses (200):
-{
-    "status": "success",
-    "code": 200,
-    "message": "Login berhasil.",
-    "data": {
-        "token": "2f5a...",
-        "user": {
-            "id": "uuid-user",
-            "full_name": "Nama Warga",
-            "email": "warga@example.com",
-            "role": "warga"
-        }
-    },
-    "errors": []
-}
-
-Contoh Response Error (401):
-{
-    "status": "error",
-    "code": 401,
-    "message": "Kredensial tidak valid.",
-    "data": [],
-    "errors": [{"reason": "invalid_credentials"}]
-}
-*/
