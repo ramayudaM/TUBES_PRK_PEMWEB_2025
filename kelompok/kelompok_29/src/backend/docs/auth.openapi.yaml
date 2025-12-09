@@ -1,0 +1,203 @@
+openapi: 3.0.3
+info:
+  title: SIPINDA Auth API
+  version: '1.0.0'
+  description: >-
+    Blueprint autentikasi untuk REST API Vanilla PHP SIPINDA.
+servers:
+  - url: /api
+paths:
+  /auth/login:
+    post:
+      operationId: authLogin
+      summary: AUTH-01 Login multi-role
+      description: >-
+        Menerima identifier (email/phone/nik) dan password. Role ditentukan server.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier:
+                  type: string
+                  example: warga@example.com
+                password:
+                  type: string
+                  format: password
+                  example: sangat-rahasia
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseLogin'
+              examples:
+                success:
+                  value:
+                    status: success
+                    code: 200
+                    message: Login berhasil.
+                    data:
+                      token: 2f5ae4...
+                      user:
+                        id: 7f075a04-50af-4da3-b2a1-44a9d4c66988
+                        full_name: Nama Warga
+                        email: warga@example.com
+                        role: warga
+                    errors: []
+        '401':
+          description: Kredensial atau token tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidCredentials:
+                  value:
+                    status: error
+                    code: 401
+                    message: Kredensial tidak valid.
+                    data: []
+                    errors:
+                      - reason: invalid_credentials
+        '403':
+          description: Akses ditolak (misal akun diblokir)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validasi gagal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation:
+                  value:
+                    status: error
+                    code: 422
+                    message: Validasi gagal.
+                    data: []
+                    errors:
+                      - field: identifier
+                        message: Field wajib diisi.
+  /auth/logout:
+    post:
+      operationId: authLogout
+      summary: AUTH-02 Logout universal
+      description: Menonaktifkan token akses aktif.
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: Bearer 2f5ae4...
+      responses:
+        '200':
+          description: Logout berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseLogout'
+              examples:
+                success:
+                  value:
+                    status: success
+                    code: 200
+                    message: Logout berhasil.
+                    data:
+                      revoked_token: 2f5ae4...
+                    errors: []
+        '401':
+          description: Token tidak ditemukan/invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  value:
+                    status: error
+                    code: 401
+                    message: Token tidak ditemukan.
+                    data: []
+                    errors:
+                      - reason: missing_token
+        '403':
+          description: Token ditolak
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    SuccessResponseLogin:
+      type: object
+      properties:
+        status:
+          type: string
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                full_name:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+        errors:
+          type: array
+          items:
+            type: object
+    SuccessResponseLogout:
+      type: object
+      properties:
+        status:
+          type: string
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            revoked_token:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+        errors:
+          type: array
+          items:
+            type: object
