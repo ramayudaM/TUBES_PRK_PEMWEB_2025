@@ -1,3 +1,5 @@
+// File: js/admin-kelola-petugas.js
+
 // --- 1. DUMMY DATA ---
 const mockOfficers = [
     { id: "EMP-2023-001", name: "Budi Santoso", dept: "Dinas Pekerjaan Umum", specialization: "Jalan & Trotoar", activeTasksCount: 2, status: "busy" },
@@ -32,7 +34,7 @@ function getStatusBadgeHtml(status) {
 // --- 3. FUNGSI RENDERING ---
 
 function renderStatsCards(officers) {
-    const total = officers.length;
+    const total = mockOfficers.length; // Menggunakan mockOfficers untuk total
     const available = officers.filter(o => o.status === 'available').length;
     const busy = officers.filter(o => o.status === 'busy').length;
     
@@ -74,7 +76,6 @@ function renderStatsCards(officers) {
 }
 
 function filterAndRenderTable() {
-    // Logika filter (Search & Dropdown)
     let filteredOfficers = mockOfficers.filter(o => {
         const matchesSearch = o.name.toLowerCase().includes(currentSearch.toLowerCase()) || 
                               o.dept.toLowerCase().includes(currentSearch.toLowerCase()) ||
@@ -85,7 +86,7 @@ function filterAndRenderTable() {
     });
 
     renderPetugasTable(filteredOfficers);
-    renderStatsCards(mockOfficers); // Stats card tetap menampilkan total data, bukan data filter.
+    renderStatsCards(filteredOfficers); 
     
     // Update info bar
     document.getElementById('showing-info').textContent = `Menampilkan ${filteredOfficers.length} dari ${mockOfficers.length} petugas`;
@@ -125,7 +126,7 @@ function renderPetugasTable(petugas) {
             </td>
             <td class="px-6 py-4">${statusHtml}</td>
             <td class="px-6 py-4 text-center">
-                <button onclick="showOfficerDetail('${p.id}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">Detail</button>
+                <a href="admin-detail-petugas.php?id=${p.id}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold">Detail</a>
             </td>
         `;
     });
@@ -141,11 +142,6 @@ document.getElementById('statusFilter').addEventListener('change', (e) => {
     currentFilter = e.target.value;
     filterAndRenderTable();
 });
-
-function showOfficerDetail(id) {
-    const officer = mockOfficers.find(o => o.id === id);
-    alert(`Simulasi Detail Petugas:\nNama: ${officer.name}\nDepartemen: ${officer.dept}\nTugas Aktif: ${officer.activeTasksCount}\nStatus: ${officer.status.toUpperCase()}`);
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     filterAndRenderTable();

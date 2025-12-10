@@ -1,3 +1,5 @@
+// File: js/admin-manajemen-tiket.js
+
 // --- 1. DUMMY DATA LENGKAP ---
 const mockTicketsData = [
     { id: "TKT-001", pelapor: "Ahmad Wijaya", email: "ahmad.wijaya@email.com", judul: "Jalan Berlubang di Jl. Sudirman", kategori: "Jalan Raya", status: "Dalam Proses", lokasi: "Jl. Sudirman No. 45, Jakarta Pusat", petugas: "Budi Santoso" },
@@ -26,13 +28,12 @@ function getStatusBadgeHtml(status) {
     let classes = 'inline-block px-3 py-1 text-xs font-semibold rounded-full ';
     const cleanStatus = status.toLowerCase().replace(/ /g, '_');
     
-    // Mapping Status ke Tailwind Classes
-    if (cleanStatus.includes('proses')) classes += 'bg-yellow-100 text-yellow-700'; // Dalam Proses
-    else if (cleanStatus.includes('selesai')) classes += 'bg-green-100 text-green-700'; // Selesai
-    else if (cleanStatus.includes('diverifikasi')) classes += 'bg-indigo-100 text-indigo-700'; // Diverifikasi
-    else if (cleanStatus.includes('ditugaskan')) classes += 'bg-orange-100 text-orange-700'; // Ditugaskan
-    else if (cleanStatus.includes('diajukan')) classes += 'bg-blue-100 text-blue-700'; // Diajukan
-    else if (cleanStatus.includes('validasi')) classes += 'bg-red-100 text-red-700'; // Menunggu Validasi
+    if (cleanStatus.includes('proses')) classes += 'bg-yellow-100 text-yellow-700';
+    else if (cleanStatus.includes('selesai')) classes += 'bg-green-100 text-green-700';
+    else if (cleanStatus.includes('diverifikasi')) classes += 'bg-indigo-100 text-indigo-700';
+    else if (cleanStatus.includes('ditugaskan')) classes += 'bg-orange-100 text-orange-700';
+    else if (cleanStatus.includes('diajukan')) classes += 'bg-blue-100 text-blue-700';
+    else if (cleanStatus.includes('validasi')) classes += 'bg-red-100 text-red-700';
     
     return `<span class="${classes}">${status}</span>`;
 }
@@ -56,7 +57,7 @@ function renderStatusTabs() {
         button.addEventListener('click', () => {
              currentFilterStatus = tab.slug;
              filterAndRenderTable();
-             renderStatusTabs(); // Re-render untuk update class active
+             renderStatusTabs(); 
         });
         tabsContainer.appendChild(button);
     });
@@ -84,15 +85,17 @@ function renderTicketTable(tickets) {
     tbody.innerHTML = '';
     
     tickets.forEach(ticket => {
-        const row = tbody.createElement('tr');
+        const row = tbody.insertRow();
         row.className = 'hover:bg-gray-50 transition-colors';
         const statusHtml = getStatusBadgeHtml(ticket.status);
         
         const isAssignable = ticket.status === 'Diajukan' || ticket.status === 'Diverifikasi Admin';
-        
+        const ticketJson = JSON.stringify(ticket).replace(/"/g, '&quot;'); // Escape quotes for HTML handler
+
+        // PERBAIKAN: Tombol Assign memanggil showOfficerModalFromTable dengan objek tiket
         const petugasDisplay = ticket.petugas ? 
             `<p class="text-gray-900">${ticket.petugas}</p>` : 
-            `<a href="#" class="text-blue-600 hover:underline flex items-center gap-1 text-sm"><i class="material-icons text-base">person_add</i> Assign</a>`;
+            `<a href="#" class="text-blue-600 hover:underline flex items-center gap-1 text-sm" onclick='showOfficerModalFromTable(${ticketJson}); return false;'><i class="material-icons text-base">person_add</i> Assign</a>`;
 
         const actionButton = `<a href="admin-detail-tiket.php?id=${ticket.id}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Lihat Detail"><i class="material-icons text-xl">visibility</i></a>`;
 
@@ -116,6 +119,15 @@ function renderTicketTable(tickets) {
     });
 }
 
+// Handler baru yang dipanggil dari onclick tabel Manajemen Tiket
+function showOfficerModalFromTable(ticketObj) {
+    if (typeof renderOfficerSelectionModal !== 'undefined') {
+        renderOfficerSelectionModal(ticketObj.id, ticketObj.petugas); // Menggunakan ticket.petugas sebagai assignedOfficerName
+    } else {
+        alert('Error: admin-select-officer.js tidak dimuat.');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     renderStatusTabs();
     filterAndRenderTable(); 
@@ -123,6 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchInput').addEventListener('input', (e) => {
         currentSearchQuery = e.target.value.toLowerCase();
         filterAndRenderTable();
-        renderStatusTabs(); // Re-render untuk update total count jika Anda mengimplementasikan counting dinamis
+        renderStatusTabs(); 
     });
 });

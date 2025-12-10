@@ -31,7 +31,6 @@ $currentTicket = [
         .officer-avatar { width: 48px; height: 48px; background-color: #e3f2fd; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #1976d2; font-size: 24px; flex-shrink: 0; }
         /* Timeline */
         .timeline-wrapper { position: relative; padding-left: 10px; }
-        .timeline-wrapper::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background-color: #e0e0e0; }
         .timeline-point { width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; position: absolute; left: 0; transform: translateX(-50%); z-index: 5; }
     </style>
 </head>
@@ -75,7 +74,6 @@ $currentTicket = [
                         </div>
                     </div>
                 </div>
-
                 </div>
 
             <div class="space-y-4">
@@ -114,7 +112,7 @@ $currentTicket = [
     <script src="js/admin-detail-tiket.js"></script>
     <script src="js/admin-select-officer.js"></script>
     <script>
-        // Data PHP di-encode ke JavaScript
+        // Definisikan data di window secara global (PERBAIKAN KRUSIAL)
         window.ticketData = <?php echo json_encode($currentTicket); ?>;
     </script>
 </body>

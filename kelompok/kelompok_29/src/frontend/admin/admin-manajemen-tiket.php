@@ -7,13 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script> 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* CSS Tambahan minimal untuk badge dan layout tabel */
         .badge-kategori { font-size: 12px; }
         .data-table th, .data-table td { padding: 16px; }
     </style>
 </head>
 <body class="bg-gray-50">
-    <main class="content-wrapper">
+    <main class="content-wrapper py-8">
         <div class="max-w-7xl mx-auto p-4">
             
             <header class="page-header flex items-center gap-4 mb-4 pt-4">
@@ -26,12 +25,7 @@
                 <div class="flex flex-col md:flex-row gap-3 mb-4">
                     <div class="flex-1 relative">
                         <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">search</i>
-                        <input
-                            type="text"
-                            id="searchInput"
-                            placeholder="Cari tiket, pelapor, atau ID..."
-                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
-                        />
+                        <input type="text" id="searchInput" placeholder="Cari tiket, pelapor, atau ID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"/>
                     </div>
                 </div>
                 
@@ -67,5 +61,6 @@
     </main>
 
     <script src="js/admin-manajemen-tiket.js"></script>
+    <script src="js/admin-select-officer.js"></script>
 </body>
 </html>

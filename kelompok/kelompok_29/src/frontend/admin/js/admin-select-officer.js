@@ -1,5 +1,4 @@
 // File: js/admin-select-officer.js
-// Diperlukan untuk admin-detail-tiket.php dan admin-manajemen-tiket.php (untuk tombol Assign)
 
 // --- 1. DUMMY DATA Petugas ---
 const mockOfficers = [
@@ -18,13 +17,8 @@ function handleSelectOfficer(officer) {
         alert(`Petugas ${officer.name} berhasil ditugaskan ke tiket ${currentTicketId}!`);
         closeOfficerModal();
         
-        // Arahkan kembali ke Detail Tiket atau reload tabel Manajemen Tiket
-        if (window.location.href.includes('admin-detail-tiket.php')) {
-            window.location.reload(); 
-        } else {
-            // Asumsi ini dipanggil dari Manajemen Tiket
-            window.location.href = 'admin-detail-tiket.php?id=' + currentTicketId;
-        }
+        // Arahkan ke Detail Tiket agar user dapat melihat pembaruan status
+        window.location.href = `admin-detail-tiket.php?id=${currentTicketId}`;
     }
 }
 
@@ -46,7 +40,7 @@ function renderOfficerSelectionModal(ticketId, currentOfficerName) {
     mockOfficers.forEach((officer) => {
         const isSelected = currentOfficerName === officer.name;
         const isAvailable = officer.status === 'available';
-        const officerJson = JSON.stringify(officer).replace(/"/g, '&quot;'); // Escape quotes for HTML attribute
+        const officerJson = JSON.stringify(officer).replace(/"/g, '&quot;'); 
 
         const cardClasses = `w-full p-4 border-2 rounded-xl transition-all text-left block ${
             isSelected 
@@ -120,10 +114,3 @@ function renderOfficerSelectionModal(ticketId, currentOfficerName) {
     modalContainer.innerHTML = modalHtml;
     document.body.style.overflow = 'hidden'; 
 }
-
-// Fungsi dummy agar tombol Assign di Manajemen Tiket bisa langsung memanggil modal
-// (Fungsi ini dipanggil dari admin-manajemen-tiket.js)
-window.showOfficerModal = function(ticketId) {
-    // Asumsi: di halaman Manajemen Tiket, tidak ada assignedOfficerName yang perlu di-pass
-    renderOfficerSelectionModal(ticketId, null); 
-};
