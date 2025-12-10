@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `sipinda`.`complaints` (
   `latitude` DOUBLE NULL DEFAULT NULL,
   `longitude` DOUBLE NULL DEFAULT NULL,
   `address` VARCHAR(255) NULL DEFAULT NULL,
-  `status` ENUM('diajukan', 'diverifikasi_admin', 'ditugaskan_ke_petugas', 'dalam_proses', 'menunggu_validasi_admin', 'selesai') NOT NULL DEFAULT 'diajukan',
+  `status` ENUM('diajukan', 'diverifikasi_admin', 'ditugaskan_ke_petugas', 'dalam_proses', 'menunggu_validasi_admin', 'ditolak_admin', 'selesai') NOT NULL DEFAULT 'diajukan',
   `assigned_officer_id` INT NULL DEFAULT NULL,
   `created_at` TIMESTAMP NULL DEFAULT NULL,
   `updated_at` TIMESTAMP NULL DEFAULT NULL,
@@ -122,7 +122,7 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `sipinda`.`complaint_progress` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `complaint_id` INT NOT NULL,
-  `status` ENUM('diajukan', 'diverifikasi_admin', 'ditugaskan_ke_petugas', 'dalam_proses', 'menunggu_validasi_admin', 'selesai') NOT NULL,
+  `status` ENUM('diajukan', 'diverifikasi_admin', 'ditugaskan_ke_petugas', 'dalam_proses', 'menunggu_validasi_admin', 'ditolak_admin', 'selesai') NOT NULL,
   `note` TEXT NULL DEFAULT NULL,
   `created_by` INT NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT NULL,
