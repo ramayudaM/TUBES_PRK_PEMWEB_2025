@@ -1,4 +1,7 @@
-// Data Tiket (Diambil dari PHP, asumsikan sudah ada di 'ticketData')
+// File: js/admin-detail-tiket.js
+
+// Ambil data tiket dari window (didefinisikan di tag <script> di admin-detail-tiket.php)
+let ticketData = window.ticketData || {}; 
 
 // --- 1. DUMMY DATA Timeline ---
 const mockTimeline = [
@@ -46,30 +49,33 @@ function renderTimeline(timeline) {
             </div>
         `;
     });
+    // Menambahkan garis vertikal di awal
     html = `<div class="absolute top-0 bottom-0 left-0 w-0.5 bg-gray-300 ml-1"></div>` + html;
     container.innerHTML = html;
 }
-
 
 function renderActionButtons(status) {
     const container = document.getElementById('actionButtonsContainer');
     container.innerHTML = '';
     let html = '';
 
+    // Ambil ID tiket dengan aman
+    const ticketId = ticketData.id || 'TKT-000';
+
     switch (status) {
         case 'diajukan':
             html = `
-                <button onclick="handleVerify('${ticketData.id}')" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 font-semibold">
+                <button onclick="handleVerify('${ticketId}')" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 font-semibold">
                     <i class="material-icons">shield</i> Verifikasi & Terima
                 </button>
-                <button onclick="handleReject('${ticketData.id}')" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold">
+                <button onclick="handleReject('${ticketId}')" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-semibold">
                     <i class="material-icons">cancel</i> Tolak Pengaduan
                 </button>
             `;
             break;
         case 'diverifikasi-admin':
             html = `
-                <button onclick="showOfficerModal()" class="w-full bg-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 font-semibold">
+                <button onclick="showOfficerModal('${ticketId}')" class="w-full bg-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 font-semibold">
                     <i class="material-icons">person_add</i> Tugaskan Petugas
                 </button>
             `;
@@ -86,7 +92,7 @@ function renderActionButtons(status) {
             break;
         case 'menunggu-validasi-admin':
             html = `
-                <button onclick="window.location.href='admin-validasi-selesai.php?id=${ticketData.id}'" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-semibold">
+                <button onclick="window.location.href='admin-validasi-selesai.php?id=${ticketId}'" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-semibold">
                     <i class="material-icons">check_circle</i> Validasi Penyelesaian
                 </button>
             `;
@@ -118,16 +124,28 @@ function handleReject(id) {
     }
 }
 
-function showOfficerModal() {
+// Perbaikan: Handler untuk memanggil modal (Mengatasi bug window.ticketData)
+function showOfficerModal(ticketId) {
+    // Memanggil fungsi render modal dari admin-select-officer.js
     if (typeof renderOfficerSelectionModal !== 'undefined') {
-        renderOfficerSelectionModal(ticketData.id, ticketData.assignedOfficer);
+        // Ambil assignedOfficerName dengan aman dari data yang sudah dimuat
+        const assignedOfficerName = window.ticketData.assignedOfficer || null; 
+        renderOfficerSelectionModal(ticketId, assignedOfficerName);
     } else {
         alert('Error: admin-select-officer.js tidak dimuat.');
     }
 }
 
+// --- 5. EKSEKUSI ---
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('statusBadgeContainer').innerHTML = getStatusBadge(ticketData.status);
-    renderActionButtons(ticketData.status);
-    renderTimeline(mockTimeline); 
+    // Ambil data tiket global saat DOM siap
+    ticketData = window.ticketData || {}; 
+    
+    if (ticketData && ticketData.status) {
+        document.getElementById('statusBadgeContainer').innerHTML = getStatusBadge(ticketData.status);
+        renderActionButtons(ticketData.status);
+        renderTimeline(mockTimeline); 
+    } else {
+        console.error("Ticket data is missing or incomplete.");
+    }
 });
