@@ -5,7 +5,7 @@ const mockComplaintsData = {
     proses: 4,
     selesai: 1,
     menu: [
-        { title: "Kelola Tiket", subtitle: "Manajemen semua pengaduan", icon: "📑", link: "manajemen-pengaduan.php" },
+        { title: "Kelola Pengaduan", subtitle: "Manajemen semua pengaduan", icon: "📑", link: "admin-manajemen-tiket.php" },
         { title: "Buat Akun Petugas", subtitle: "Tambahkan petugas baru", icon: "🧑‍💻", link: "tambah-petugas.php" },
         { title: "Kelola Petugas", subtitle: "Lihat daftar petugas", icon: "👥", link: "daftar-petugas.php" }
     ],
