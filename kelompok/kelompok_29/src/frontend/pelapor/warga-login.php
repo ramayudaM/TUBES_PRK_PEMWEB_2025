@@ -25,7 +25,7 @@
             <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
                 <h2 class="text-xl font-semibold mb-6 text-gray-800">Masuk ke Akun Anda</h2>
                 
-                <form id="wargaLoginForm" action="warga-process_login.php" method="POST">
+                <form id="wargaLoginForm" novalidate>
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Email</label>
                         <div class="relative">
@@ -42,9 +42,10 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold mb-4">
+                    <button id="loginButton" type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold mb-4">
                         Masuk
                     </button>
+                    <p id="loginFeedback" class="text-center text-sm text-red-600 min-h-[1.5rem]"></p>
 
                     <div class="text-center">
                       <button type="button" onclick="window.location.href='warga-register.php'" class="text-blue-600 hover:underline font-medium">
@@ -59,6 +60,7 @@
             </p>
         </div>
     </div>
+    <script src="js/warga-auth.js"></script>
     <script src="js/warga-login.js"></script>
 </body>
 </html>

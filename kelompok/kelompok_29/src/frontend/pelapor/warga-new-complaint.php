@@ -1,13 +1,3 @@
-<?php
-$categories = [
-    "Jalan Raya",
-    "Penerangan Jalan",
-    "Drainase & Air",
-    "Trotoar",
-    "Rambu Lalu Lintas",
-    "Taman"
-];
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -16,6 +6,7 @@ $categories = [
     <title>Buat Pengaduan Baru</title>
     <script src="https://cdn.tailwindcss.com"></script> 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <style>
         .input-icon-top { position: absolute; left: 12px; top: 12px; color: #9ca3af; }
     </style>
@@ -29,7 +20,8 @@ $categories = [
     </div>
 
     <div class="max-w-4xl mx-auto p-4">
-        <form id="newComplaintForm" class="space-y-6">
+        <form id="newComplaintForm" class="space-y-6" enctype="multipart/form-data" novalidate>
+            <div id="newComplaintAlert" class="hidden p-3 rounded-lg text-sm"></div>
             
             <div class="bg-white rounded-xl p-6 border border-gray-200">
                 <label class="block text-gray-900 font-medium mb-2">Foto Bukti <span class="text-red-500">*</span></label>
@@ -51,12 +43,14 @@ $categories = [
 
             <div class="bg-white rounded-xl p-6 border border-gray-200">
                 <label for="category" class="block text-gray-900 font-medium mb-2">Kategori <span class="text-red-500">*</span></label>
-                <select id="category" name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 appearance-none" required>
-                    <option value="">Pilih kategori pengaduan</option>
-                    <?php foreach($categories as $cat): ?>
-                        <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
-                    <?php endforeach; ?>
-                </select>
+        <select id="categorySelect" name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 appearance-none" required>
+            <option value="">Memuat kategori...</option>
+        </select>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 border border-gray-200">
+                <label for="titleInput" class="block text-gray-900 font-medium mb-2">Judul Pengaduan <span class="text-red-500">*</span></label>
+                <input id="titleInput" type="text" name="title" placeholder="Contoh: Jalan Berlubang di Jl. Sudirman" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
             </div>
 
             <div class="bg-white rounded-xl p-6 border border-gray-200">
@@ -72,27 +66,27 @@ $categories = [
                 <p class="text-gray-500 mt-2 text-sm">Minimal 20 karakter</p>
             </div>
 
-            <div class="bg-white rounded-xl p-6 border border-gray-200">
-                <label class="block text-gray-900 font-medium mb-2">Lokasi (Opsional)</label>
-                <p class="text-gray-600 mb-4 text-sm">Tandai lokasi pada peta atau masukkan alamat</p>
-                
-                <input
-                  type="text"
-                  id="locationInput"
-                  placeholder="Masukkan alamat lengkap"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 mb-4"
-                />
-
-                <div id="map-placeholder" class="h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                    <div class="flex flex-col items-center">
-                        <i class="material-icons text-4xl text-gray-500">place</i>
-                        <p class="mt-2 text-base font-medium">Klik untuk memilih lokasi pada peta</p>
+            <div class="bg-white rounded-xl p-6 border border-gray-200 space-y-4">
+                <div>
+                    <label class="block text-gray-900 font-medium mb-2">Alamat / Lokasi</label>
+                    <textarea id="locationInput" placeholder="Masukkan alamat lengkap" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 resize-none" rows="2"></textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Latitude</label>
+                        <input id="latitudeInput" type="text" readonly class="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Longitude</label>
+                        <input id="longitudeInput" type="text" readonly class="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-sm">
                     </div>
                 </div>
-                
-                <button type="button" id="use-my-location-btn" class="mt-3 flex items-center gap-2 text-blue-600 hover:underline font-medium">
-                  <i class="material-icons text-lg">my_location</i> Gunakan Lokasi Saya
-                </button>
+
+                <div id="complaintMap" class="h-64 bg-gray-200 rounded-lg"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <i class="material-icons text-base">info</i>
+                    Klik pada peta untuk memilih koordinat. Sistem akan mencoba mengisi alamat otomatis.
+                </div>
             </div>
 
             <div class="flex gap-3">
@@ -106,66 +100,11 @@ $categories = [
         </form>
     </div>
     
+    <script src="js/warga-auth.js"></script>
     <script>
-        // --- LOGIKA JAVASCRIPT UNTUK FILE UPLOAD (PREVIEW) ---
-        const photoUpload = document.getElementById('photoUpload');
-        const uploadLabel = document.getElementById('upload-label');
-        const imagePreviewArea = document.getElementById('image-preview-area');
-
-        photoUpload.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            
-            if (file) {
-                // Cek ukuran file (Max 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('Ukuran foto maksimal 5MB.');
-                    photoUpload.value = ''; // Reset input file
-                    imagePreviewArea.innerHTML = '';
-                    uploadLabel.classList.remove('hidden');
-                    return;
-                }
-
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    // Sembunyikan label upload
-                    uploadLabel.classList.add('hidden');
-                    
-                    // Tampilkan pratinjau gambar dan tombol hapus
-                    imagePreviewArea.classList.remove('hidden');
-                    imagePreviewArea.innerHTML = `
-                        <div class="relative w-full h-64 border border-gray-300 rounded-lg overflow-hidden mb-4">
-                            <img src="${e.target.result}" alt="Foto Bukti" class="w-full h-full object-cover">
-                            <button type="button" id="remove-photo-btn" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 shadow-lg hover:bg-red-700 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-
-                    // Tambahkan event listener untuk tombol hapus
-                    document.getElementById('remove-photo-btn').addEventListener('click', function() {
-                        photoUpload.value = ''; // Reset input file
-                        imagePreviewArea.innerHTML = ''; // Hapus pratinjau
-                        uploadLabel.classList.remove('hidden'); // Tampilkan label upload lagi
-                        imagePreviewArea.classList.add('hidden');
-                    });
-                };
-                
-                reader.readAsDataURL(file); // Membaca file sebagai URL data
-            } else {
-                // Jika pengguna membatalkan pemilihan file
-                imagePreviewArea.innerHTML = '';
-                uploadLabel.classList.remove('hidden');
-                imagePreviewArea.classList.add('hidden');
-            }
-        });
-        
-        // --- LOGIKA JAVASCRIPT UNTUK FORM SUBMIT DAN LOKASI (Opsional) ---
-        // (Anda bisa menambahkan logika form submission di sini)
-        
+        PelaporAuth.requirePelapor();
     </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="js/warga-new-complaint.js"></script>
 </body>
 </html>

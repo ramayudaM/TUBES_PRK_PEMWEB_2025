@@ -19,6 +19,7 @@
     </div>
 
     <div class="max-w-4xl mx-auto p-4">
+        <div id="historyAlert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
         <div class="bg-white rounded-xl p-4 border border-gray-200 mb-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="material-icons text-xl text-gray-600">filter_list</i>
@@ -35,11 +36,17 @@
         <div class="space-y-3" id="complaints-history-list">
           </div>
 
+        <div id="historyPagination" class="hidden flex items-center justify-between mt-4 text-sm"></div>
+
         <div id="no-filtered-complaints" class="hidden bg-white rounded-xl p-12 text-center border border-gray-200 mt-3">
           <p class="text-gray-500">Tidak ada pengaduan dengan status ini</p>
         </div>
     </div>
 
+    <script src="js/warga-auth.js"></script>
+    <script>
+        PelaporAuth.requirePelapor();
+    </script>
     <script src="js/warga-riwayat-pengaduan.js"></script>
 </body>
 </html>

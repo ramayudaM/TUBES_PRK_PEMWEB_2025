@@ -32,7 +32,8 @@
             </div>
           </div>
 
-          <form id="registerForm" class="p-6 space-y-4">
+          <form id="registerForm" class="p-6 space-y-4" novalidate>
+            <div id="registerFeedback" class="hidden p-3 rounded-lg text-sm"></div>
             <div>
               <label class="block text-gray-700 mb-2 text-sm">Nama Lengkap <span class="text-red-500">*</span></label>
               <div class="relative">
@@ -95,7 +96,7 @@
               <p>Dengan mendaftar, Anda menyetujui untuk menggunakan sistem ini sesuai dengan ketentuan yang berlaku.</p>
             </div>
 
-            <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-semibold">
+            <button id="registerButton" type="submit" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-semibold">
               <i class="material-icons text-xl">person_add</i> Daftar Sekarang
             </button>
 
@@ -109,6 +110,7 @@
         </div>
       </div>
     </div>
+    <script src="js/warga-auth.js"></script>
     <script src="js/warga-register.js"></script>
 </body>
 </html>

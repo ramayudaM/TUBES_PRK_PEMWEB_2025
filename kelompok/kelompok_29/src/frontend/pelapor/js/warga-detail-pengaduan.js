@@ -1,136 +1,170 @@
-// File: js/warga-detail-pengaduan.js
+const DETAIL_DOM = {
+    alert: document.getElementById('detailAlert'),
+    statusBadge: document.getElementById('statusBadgeContainer'),
+    title: document.getElementById('detailTitle'),
+    category: document.getElementById('detailCategory'),
+    createdAt: document.getElementById('detailCreatedAt'),
+    description: document.getElementById('detailDescription'),
+    address: document.getElementById('detailAddress'),
+    photoBefore: document.getElementById('detailPhotoBefore'),
+    timeline: document.getElementById('timelineContainer'),
+    officerSection: document.getElementById('assignedOfficerSection'),
+    officerName: document.getElementById('officerName'),
+    officerMeta: document.getElementById('officerMeta'),
+    completionSection: document.getElementById('completionSection'),
+    completionProofs: document.getElementById('completionProofs')
+};
 
-let complaintData = window.complaintData || {};
+const complaintId = window.COMPLAINT_ID || new URLSearchParams(window.location.search).get('id');
+let detailMap;
+let detailMarker;
 
-// --- DUMMY DATA Timeline (Sesuai image_6e65aa.png) ---
-const mockTimeline = [
-    // Ikon di sini adalah ikon dummy/titik karena tidak ada ikon Material Icons yang sama persis
-    // Kita gunakan warna background untuk menunjukkan status
-    { status: 'diajukan', notes: 'Diajukan', actor: complaintData.reporterName, color: 'blue', isDone: true, date: '2025-12-01' },
-    { status: 'diverifikasi-admin', notes: 'Diverifikasi Admin', actor: 'Admin System', color: 'purple', isDone: true, date: '2025-12-02' },
-    { status: 'ditugaskan-ke-petugas', notes: 'Ditugaskan ke Petugas', actor: 'Admin System', color: 'orange', isDone: true, date: '2025-12-03' },
-    { status: 'dalam-proses', notes: 'Dalam Proses', actor: complaintData.assignedOfficer, color: 'yellow', isDone: true, date: '2025-12-05' },
-    { status: 'menunggu-validasi-admin', notes: 'Menunggu Validasi Admin', actor: 'Belum dilakukan', color: 'gray', isDone: false, date: null },
-    { status: 'selesai', notes: 'Selesai', actor: 'Belum dilakukan', color: 'gray', isDone: false, date: null },
-];
-
-// --- FUNGSI UTILITAS & RENDERING ---
-
-function getStatusBadgeHtml(status) {
-    let text;
-    let classes = 'inline-block px-3 py-1 rounded-lg font-medium text-sm '; 
-    
-    if (status === 'selesai') {
-        text = 'Selesai';
-        classes += 'bg-green-100 text-green-700';
-    } else if (status === 'dalam-proses') {
-        text = 'Dalam Proses';
-        classes += 'bg-yellow-100 text-yellow-700';
-    } else if (status === 'diverifikasi-admin' || status === 'ditugaskan-ke-petugas') {
-        text = 'Diverifikasi';
-        classes += 'bg-blue-100 text-blue-700';
-    } else {
-        text = status.toUpperCase().replace(/-/g, ' ');
-        classes += 'bg-gray-100 text-gray-700';
+function showDetailAlert(message = '', type = 'error') {
+    if (!DETAIL_DOM.alert) return;
+    if (!message) {
+        DETAIL_DOM.alert.classList.add('hidden');
+        DETAIL_DOM.alert.textContent = '';
+        return;
     }
-    
-    return `<span class="${classes}">${text}</span>`;
+    const palette =
+        type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
+            : 'bg-red-50 border border-red-200 text-red-700';
+    DETAIL_DOM.alert.className = `p-3 rounded-lg text-sm ${palette}`;
+    DETAIL_DOM.alert.textContent = message;
+    DETAIL_DOM.alert.classList.remove('hidden');
 }
 
-function renderTimeline(timeline, currentStatus) {
-    const container = document.getElementById('timelineContainer');
-    // Tambahkan garis vertikal di awal container
-    container.innerHTML = '<div class="timeline-line"></div>'; 
+function initDetailMap() {
+    const container = document.getElementById('detailMap');
+    if (!container) return;
+    detailMap = L.map('detailMap').setView([-6.2, 106.816], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(detailMap);
+}
 
-    let foundCurrent = false;
+function updateMap(lat, lng) {
+    if (!detailMap || !lat || !lng) return;
+    if (!detailMarker) {
+        detailMarker = L.marker([lat, lng]).addTo(detailMap);
+    } else {
+        detailMarker.setLatLng([lat, lng]);
+    }
+    detailMap.setView([lat, lng], 15);
+}
 
-    timeline.forEach(item => {
-        const isCurrent = item.status === currentStatus;
-        const isDone = item.isDone; 
-        
-        if (isCurrent) foundCurrent = true;
+function formatDate(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString('id-ID');
+}
 
-        // Tentukan warna dot
-        let dotColor = 'bg-gray-400';
-        if (isCurrent) {
-            dotColor = `bg-${item.color}-600`;
-        } else if (isDone) {
-             // Untuk status yang sudah lewat tapi tidak sedang aktif, kita gunakan warna sesuai data, tapi tidak semua
-             // Sesuai gambar, yang aktif/done: biru, ungu, oranye, kuning. Yang belum: abu-abu.
-             if (item.status === 'diajukan') dotColor = 'bg-blue-600';
-             else if (item.status === 'diverifikasi-admin') dotColor = 'bg-purple-600';
-             else if (item.status === 'ditugaskan-ke-petugas') dotColor = 'bg-orange-600';
-             else if (item.status === 'dalam-proses') dotColor = 'bg-yellow-600';
-             else dotColor = 'bg-gray-400'; // Default untuk yang belum dimulai
-        }
-        
-        // Teks dan warna font
-        const notesClasses = isDone || isCurrent ? 'text-gray-800' : 'text-gray-500';
-        const actorClasses = isDone || isCurrent ? 'text-gray-600' : 'text-gray-400';
-        const actorText = item.actor === 'Belum dilakukan' ? 'Belum dilakukan' : `oleh ${item.actor}`;
+function statusBadge(status = '') {
+    const normalized = status.replace(/_/g, '-');
+    let classes = 'inline-block px-3 py-1 rounded-lg font-medium text-sm ';
+    if (normalized.includes('selesai')) classes += 'bg-green-100 text-green-700';
+    else if (normalized.includes('proses') || normalized.includes('tugaskan') || normalized.includes('validasi'))
+        classes += 'bg-yellow-100 text-yellow-700';
+    else classes += 'bg-gray-100 text-gray-700';
+    return `<span class="${classes}">${normalized.replace(/-/g, ' ')}</span>`;
+}
 
-        // Jika sudah selesai atau sedang berjalan, berikan font medium pada Notes
-        const isNoteBold = isDone || isCurrent;
+function renderDetail(data) {
+    DETAIL_DOM.title.textContent = data.title || 'Pengaduan Infrastruktur';
+    DETAIL_DOM.category.textContent = data.category || '-';
+    DETAIL_DOM.createdAt.textContent = formatDate(data.created_at);
+    DETAIL_DOM.description.textContent = data.description || '-';
+    DETAIL_DOM.address.textContent = data.address || '-';
+    if (DETAIL_DOM.photoBefore) {
+        const photoUrl = PelaporAuth.resolveFileUrl(data.photo_before);
+        DETAIL_DOM.photoBefore.src = photoUrl || 'https://placehold.co/600x300?text=Tidak+ada+foto';
+    }
+    DETAIL_DOM.statusBadge.innerHTML = statusBadge(data.status || '');
+    updateMap(data.location?.latitude, data.location?.longitude);
 
+    if (data.assigned_officer) {
+        DETAIL_DOM.officerSection.classList.remove('hidden');
+        DETAIL_DOM.officerName.textContent = data.assigned_officer.name || '-';
+        const metaParts = [];
+        if (data.assigned_officer.department) metaParts.push(data.assigned_officer.department);
+        if (data.assigned_officer.specialization) metaParts.push(data.assigned_officer.specialization);
+        DETAIL_DOM.officerMeta.textContent = metaParts.join(' • ') || 'Petugas Lapangan';
+    } else {
+        DETAIL_DOM.officerSection.classList.add('hidden');
+    }
 
-        // HTML untuk setiap item timeline
-        const timelineItemHtml = `
+    if (Array.isArray(data.completion_proofs) && data.completion_proofs.length > 0) {
+        DETAIL_DOM.completionSection.classList.remove('hidden');
+        DETAIL_DOM.completionProofs.innerHTML = data.completion_proofs
+            .map((proof) => {
+                const img = PelaporAuth.resolveFileUrl(proof.photo_after);
+                return `
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <img src="${img}" alt="Bukti Penyelesaian" class="w-full h-48 object-cover bg-gray-100">
+                        <div class="p-3 text-sm text-gray-600">
+                            ${proof.notes || 'Tidak ada catatan.'}
+                            <div class="text-xs text-gray-400 mt-1">${formatDate(proof.created_at)}</div>
+                        </div>
+                    </div>
+                `;
+            })
+            .join('');
+    } else {
+        DETAIL_DOM.completionSection.classList.add('hidden');
+    }
+}
+
+function renderTimeline(records = []) {
+    if (!DETAIL_DOM.timeline) return;
+    if (!records.length) {
+        DETAIL_DOM.timeline.innerHTML = '<p class="text-sm text-gray-500">Timeline belum tersedia.</p>';
+        return;
+    }
+    DETAIL_DOM.timeline.innerHTML = '<div class="timeline-line"></div>';
+    records.forEach((item) => {
+        DETAIL_DOM.timeline.innerHTML += `
             <div class="flex gap-3 relative timeline-item mb-4">
                 <div class="flex flex-col items-center">
-                    <div class="timeline-dot ${dotColor} mt-2" style="margin-left: 10px;"></div>
+                    <div class="timeline-dot bg-blue-500 mt-2" style="margin-left: 10px;"></div>
                 </div>
-
                 <div class="flex-1 -mt-1">
-                    <p class="${notesClasses} ${isNoteBold ? 'font-medium' : ''}">${item.notes}</p>
-                    <p class="text-xs ${actorClasses}">${actorText}</p>
+                    <p class="text-gray-800 font-medium">${item.note || item.status}</p>
+                    <p class="text-xs text-gray-500">${item.created_by?.name || '-'} • ${formatDate(item.created_at)}</p>
                 </div>
             </div>
         `;
-        
-        // Cek apakah ini item terakhir
-        if (item.status === 'selesai') {
-            // Hilangkan garis vertikal jika sudah mencapai item terakhir.
-            // Kita bisa menggunakan CSS untuk ini, tetapi karena struktur HTML yang kita buat di sini tidak punya 
-            // elemen terpisah untuk garis di setiap item, kita biarkan saja. 
-            // Solusi: Ganti `.timeline-container::before` di CSS dengan `timeline-line` dan hapus garis terakhir di JS 
-            // (namun ini lebih kompleks. Kita pertahankan garis penuh untuk kesederhanaan).
-            container.innerHTML += timelineItemHtml.replace('<div class="timeline-line"></div>', '');
-        } else {
-            container.innerHTML += timelineItemHtml;
-        }
     });
-    
-    // Setelah semua item di-render, kita hapus garis yang berada di bawah dot terakhir yang done/current
-    const lastDoneDot = container.querySelector(`.timeline-dot.${dotColor}:last-of-type`);
-    if(lastDoneDot) {
-        // Karena kita menggunakan satu div .timeline-line untuk garis penuh, kita tidak bisa memotongnya dengan mudah di JS.
-        // Kita biarkan saja untuk sementara, dan berikan styling dot yang lebih besar pada CSS agar tampak menutupi garis.
+}
+
+async function loadComplaintDetail() {
+    if (!complaintId) {
+        showDetailAlert('ID pengaduan tidak ditemukan pada URL.');
+        return;
+    }
+    try {
+        const payload = await PelaporAPI.request(`/pelapor/complaints/${complaintId}`);
+        renderDetail(payload?.data || {});
+        await loadComplaintTimeline();
+    } catch (error) {
+        console.error('[DetailPengaduan] error', error);
+        showDetailAlert(error.message || 'Gagal memuat detail pengaduan.');
     }
 }
 
-// --- EKSEKUSI ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Memperbarui mockTimeline dengan data dinamis
-    mockTimeline[0].actor = complaintData.reporterName || 'Ahmad Wijaya';
-    mockTimeline[3].actor = complaintData.assignedOfficer || 'Budi Santoso';
-
-    if (complaintData && complaintData.status) {
-        // Tentukan isDone pada mockTimeline berdasarkan currentStatus
-        let found = false;
-        mockTimeline.forEach(item => {
-            if (item.status === complaintData.status) {
-                found = true;
-                item.isDone = true;
-            } else if (!found) {
-                item.isDone = true;
-            } else {
-                item.isDone = false;
-            }
-        });
-
-        document.getElementById('statusBadgeContainer').innerHTML = getStatusBadgeHtml(complaintData.status);
-        renderTimeline(mockTimeline, complaintData.status); 
-    } else {
-        console.error("Complaint data is missing or incomplete.");
+async function loadComplaintTimeline() {
+    try {
+        const payload = await PelaporAPI.request(`/pelapor/complaints/${complaintId}/timeline`);
+        renderTimeline(payload?.data?.records || []);
+    } catch (error) {
+        console.error('[DetailPengaduan] timeline error', error);
+        renderTimeline([]);
     }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    PelaporAuth.requirePelapor();
+    initDetailMap();
+    loadComplaintDetail();
 });

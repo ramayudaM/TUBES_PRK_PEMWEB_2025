@@ -1,86 +1,144 @@
-// File: js/warga-dashboard.js
+const DashboardDOM = {
+    name: document.getElementById('dashboardUserName'),
+    logoutButton: document.getElementById('dashboardLogoutButton'),
+    statsContainer: document.getElementById('warga-stats-container'),
+    recentList: document.getElementById('recent-complaints-list'),
+    emptyState: document.getElementById('no-complaints-state'),
+    alert: document.getElementById('dashboardAlert'),
+    apiInfo: document.getElementById('dashboardApiInfo')
+};
+const dashboardApiLogs = [];
 
-// --- DUMMY DATA ---
-const userComplaints = [
-    { id: 'TKT-001', reporterId: 'user1', status: 'dalam-proses', title: 'Jalan Berlubang di Jl. Sudirman', location: 'Jl. Sudirman No. 45', createdAt: '2025-12-05', imageUrl: 'img/dummy-road.jpg', category: 'Jalan Raya' },
-    { id: 'TKT-002', reporterId: 'user1', status: 'ditugaskan-ke-petugas', title: 'Lampu Jalan Mati', location: 'Perumahan Griya Asri', createdAt: '2025-12-01', imageUrl: 'img/dummy-lamp.jpg', category: 'Penerangan' },
-    { id: 'TKT-003', reporterId: 'user1', status: 'selesai', title: 'Trotoar Rusak', location: 'Jl. Gatot Subroto', createdAt: '2025-11-20', imageUrl: 'img/dummy-walkway.jpg', category: 'Trotoar' },
-    { id: 'TKT-004', reporterId: 'user1', status: 'diajukan', title: 'Saluran Tersumbat', location: 'Jl. Melati', createdAt: '2025-12-10', imageUrl: 'img/dummy-drain.jpg', category: 'Drainase' },
-];
-
-// --- FUNGSI UTILITAS ---
-function getStatusBadgeHtml(status) {
-    let text = status.toUpperCase().replace(/-/g, ' ');
-    let classes = 'inline-block px-3 py-1 text-xs font-medium rounded-lg ';
-    
-    if (status.includes('selesai')) classes += 'bg-green-100 text-green-700';
-    else if (status.includes('proses') || status.includes('ditugaskan') || status.includes('diajukan') || status.includes('diverifikasi') || status.includes('validasi')) classes += 'bg-yellow-100 text-yellow-700';
-    else classes += 'bg-gray-100 text-gray-700';
-
-    return `<span class="${classes}">${text}</span>`;
+function appendApiInfoLog(section, payload = {}) {
+    if (!DashboardDOM.apiInfo) return;
+    const now = new Date().toLocaleTimeString('id-ID');
+    const status = payload?.status || 'tidak diketahui';
+    const code = payload?.code != null ? ` (${payload.code})` : '';
+    const message = payload?.message || 'Respon tidak memiliki pesan.';
+    const entry = `[${now}] ${section}: ${status}${code} - ${message}`;
+    dashboardApiLogs.unshift(entry);
+    DashboardDOM.apiInfo.textContent = dashboardApiLogs.slice(0, 4).join(' | ');
 }
 
-// --- FUNGSI RENDERING ---
-
-function renderDashboard() {
-    const totalComplaints = userComplaints.length;
-    const inProgress = userComplaints.filter(c => c.status !== 'selesai').length;
-    const completed = userComplaints.filter(c => c.status === 'selesai').length;
-    const recentComplaints = userComplaints.slice(0, 3);
-    
-    renderStats(totalComplaints, inProgress, completed);
-    renderRecentComplaints(recentComplaints);
+function setDashboardAlert(message = '', type = 'error') {
+    if (!DashboardDOM.alert) return;
+    if (!message) {
+        DashboardDOM.alert.classList.add('hidden');
+        DashboardDOM.alert.textContent = '';
+        return;
+    }
+    const palette =
+        type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
+            : 'bg-red-50 border border-red-200 text-red-700';
+    DashboardDOM.alert.className = `mb-4 p-3 rounded-lg text-sm ${palette}`;
+    DashboardDOM.alert.textContent = message;
+    DashboardDOM.alert.classList.remove('hidden');
 }
 
-function renderStats(total, inProgress, completed) {
-    const container = document.getElementById('warga-stats-container');
-    container.innerHTML = `
+function hydrateDashboardHeader() {
+    const user = PelaporAuth.getUser();
+    if (DashboardDOM.name) {
+        DashboardDOM.name.textContent = user?.full_name || user?.name || 'Pelapor';
+    }
+    DashboardDOM.logoutButton?.addEventListener('click', () => PelaporAuth.handleLogout());
+}
+
+function renderStats(data = {}) {
+    if (!DashboardDOM.statsContainer) return;
+    const total = data.total_laporan ?? data.total ?? data.total_tasks ?? 0;
+    const diproses = data.total_diproses ?? data.in_progress ?? data.active ?? data.on_progress ?? 0;
+    const selesai = data.total_selesai ?? data.finished ?? data.completed ?? 0;
+    DashboardDOM.statsContainer.innerHTML = `
         <div class="bg-white rounded-xl p-4 border border-gray-200 text-center">
             <div class="text-gray-900 font-bold mb-1 text-xl">${total}</div>
             <p class="text-gray-600 text-sm">Total</p>
         </div>
         <div class="bg-white rounded-xl p-4 border border-yellow-200 text-center">
-            <div class="text-yellow-600 font-bold mb-1 text-xl">${inProgress}</div>
+            <div class="text-yellow-600 font-bold mb-1 text-xl">${diproses}</div>
             <p class="text-gray-600 text-sm">Diproses</p>
         </div>
         <div class="bg-white rounded-xl p-4 border border-green-200 text-center">
-            <div class="text-green-600 font-bold mb-1 text-xl">${completed}</div>
+            <div class="text-green-600 font-bold mb-1 text-xl">${selesai}</div>
             <p class="text-gray-600 text-sm">Selesai</p>
         </div>
     `;
 }
 
-function renderRecentComplaints(complaints) {
-    const container = document.getElementById('recent-complaints-list');
-    container.innerHTML = '';
+function getStatusBadge(status = '') {
+    const normalized = status.replace(/_/g, '-');
+    let classes = 'inline-block px-3 py-1 text-xs font-medium rounded-lg ';
+    if (normalized.includes('selesai')) classes += 'bg-green-100 text-green-700';
+    else if (normalized.includes('proses') || normalized.includes('tugaskan') || normalized.includes('validasi'))
+        classes += 'bg-yellow-100 text-yellow-700';
+    else classes += 'bg-gray-100 text-gray-700';
+    return `<span class="${classes}">${normalized.replace(/-/g, ' ')}</span>`;
+}
 
-    if (complaints.length === 0) {
-        document.getElementById('no-complaints-state').classList.remove('hidden');
+function renderRecent(records = []) {
+    if (!DashboardDOM.recentList) return;
+    DashboardDOM.recentList.innerHTML = '';
+    if (records.length === 0) {
+        DashboardDOM.emptyState?.classList.remove('hidden');
         return;
     }
-    document.getElementById('no-complaints-state').classList.add('hidden');
+    DashboardDOM.emptyState?.classList.add('hidden');
 
-    complaints.forEach(c => {
-        const badge = getStatusBadgeHtml(c.status);
-        container.innerHTML += `
-            <a href="warga-detail-pengaduan.php?id=${c.id}" class="bg-white rounded-xl p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow flex gap-4 items-start">
-                <div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src="${c.imageUrl}" alt="${c.title}" class="w-full h-full object-cover" />
+    records.forEach((record) => {
+        const badge = getStatusBadge(record.status || '');
+        DashboardDOM.recentList.innerHTML += `
+            <a href="warga-detail-pengaduan.php?id=${record.id}" class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow block">
+                <div class="flex items-center justify-between gap-3 mb-1">
+                    <p class="text-gray-900 font-medium truncate">${record.title || 'Pengaduan Infrastruktur'}</p>
+                    ${badge}
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start mb-1">
-                        <p class="text-gray-900 font-medium truncate">${c.title}</p>
-                        ${badge}
-                    </div>
-                    <div class="space-y-1 text-gray-600 text-sm mt-1">
-                        <p class="flex items-center gap-1">#${c.id} - ${c.category}</p>
-                        <p class="flex items-center gap-1 text-gray-500"><i class="material-icons text-base">place</i> ${c.location}</p>
-                    </div>
-                </div>
+                <p class="text-sm text-gray-500">#${record.id} • ${record.category || '-'}</p>
+                <p class="flex items-center gap-1 text-sm text-gray-600 mt-1">
+                    <i class="material-icons text-base">place</i>${record.address || '-'}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">${new Date(record.created_at).toLocaleString('id-ID')}</p>
             </a>
         `;
     });
 }
 
-// --- EKSEKUSI ---
-document.addEventListener('DOMContentLoaded', renderDashboard);
+async function loadStats() {
+    DashboardDOM.statsContainer.innerHTML =
+        '<div class="col-span-3 text-center text-sm text-gray-500">Memuat statistik...</div>';
+    try {
+        const payload = await PelaporAPI.request('/pelapor/dashboard/stats');
+        console.info('[WargaDashboard] stats payload', payload);
+        renderStats(payload?.data || {});
+        appendApiInfoLog('Statistik', payload);
+    } catch (error) {
+        console.error('[PelaporDashboard] stats error', error);
+        setDashboardAlert(error.message || 'Gagal memuat statistik.');
+        DashboardDOM.statsContainer.innerHTML =
+            '<div class="col-span-3 text-center text-sm text-red-600">Gagal memuat statistik.</div>';
+        appendApiInfoLog('Statistik', { status: 'error', message: error.message });
+    }
+}
+
+async function loadRecent() {
+    DashboardDOM.recentList.innerHTML =
+        '<div class="bg-white rounded-xl p-4 border border-gray-200 text-center text-sm text-gray-500">Memuat data...</div>';
+    try {
+        const payload = await PelaporAPI.request('/pelapor/complaints/recent', { query: { limit: 5 } });
+        console.info('[WargaDashboard] recent payload', payload);
+        renderRecent(payload?.data?.records || []);
+        appendApiInfoLog('Pengaduan terbaru', payload);
+    } catch (error) {
+        console.error('[PelaporDashboard] recent error', error);
+        setDashboardAlert(error.message || 'Gagal memuat pengaduan terbaru.');
+        DashboardDOM.recentList.innerHTML =
+            '<div class="bg-white rounded-xl p-4 border border-gray-200 text-center text-sm text-red-600">Tidak dapat memuat data.</div>';
+        appendApiInfoLog('Pengaduan terbaru', { status: 'error', message: error.message });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    PelaporAuth.requirePelapor();
+    hydrateDashboardHeader();
+    loadStats();
+    loadRecent();
+});

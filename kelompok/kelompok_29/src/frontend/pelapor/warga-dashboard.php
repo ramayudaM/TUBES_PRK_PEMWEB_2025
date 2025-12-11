@@ -33,21 +33,20 @@
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <p class="text-blue-100 mb-1 text-sm">Selamat Datang,</p>
-                        <h1 class="text-2xl font-semibold">Ahmad Wijaya</h1>
+                        <h1 id="dashboardUserName" class="text-2xl font-semibold">-</h1>
                     </div>
                     <div class="flex gap-2">
-                        <a href="warga-edit-profil.php" class="header-icon" title="Edit Profile">
-                            <i class="material-icons">person</i>
-                        </a>
-                        <a href="warga-login.php" class="header-icon" title="Logout">
+                        <button type="button" id="dashboardLogoutButton" class="header-icon" title="Logout">
                             <i class="material-icons">arrow_forward</i>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="max-w-4xl mx-auto p-4">
+            <div id="dashboardAlert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+            <p id="dashboardApiInfo" class="text-xs text-gray-400 mb-4"></p>
             <button onclick="window.location.href='warga-new-complaint.php'" class="w-full bg-blue-600 text-white p-4 rounded-xl shadow-lg hover:bg-blue-700 transition-colors mb-6 flex items-center justify-center gap-3 font-semibold">
                 <i class="material-icons text-xl">add</i>
                 <span class="text-white">Buat Pengaduan Baru</span>
@@ -72,6 +71,10 @@
             </div>
         </div>
     </div>
+    <script src="js/warga-auth.js"></script>
+    <script>
+        PelaporAuth.requirePelapor();
+    </script>
     <script src="js/warga-dashboard.js"></script>
 </body>
 </html>
