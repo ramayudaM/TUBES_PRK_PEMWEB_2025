@@ -10,6 +10,7 @@ $ticketId = isset($_GET['id']) ? trim($_GET['id']) : '';
     <script src="https://cdn.tailwindcss.com"></script> 
     <script src="js/admin-auth-guard.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         .header-sticky { background-color: white; border-bottom: 1px solid #e9ecef; position: sticky; top: 0; z-index: 10; }
         .map-placeholder { background-color: #f0f0f0; }
@@ -81,9 +82,7 @@ $ticketId = isset($_GET['id']) ? trim($_GET['id']) : '';
                 </div>
                 <div class="bg-white rounded-xl p-6 border border-gray-200">
                     <h3 class="text-xl font-semibold text-gray-900 mb-4">Peta Lokasi</h3>
-                    <div class="map-placeholder rounded-xl border border-dashed border-gray-200 flex items-center justify-center h-56 text-gray-400 text-sm" id="ticketMapPlaceholder">
-                        Lokasi akan ditampilkan di sini
-                    </div>
+                    <div id="ticketMap" class="h-56 rounded-xl border border-gray-200 overflow-hidden"></div>
                 </div>
                 <div class="bg-white rounded-xl p-6 border border-gray-200" id="reporterCard">
                     <h3 class="text-xl font-semibold text-gray-900 mb-4">Informasi Pelapor</h3>
@@ -147,6 +146,7 @@ $ticketId = isset($_GET['id']) ? trim($_GET['id']) : '';
 
     <div id="modalRoot"></div>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="js/admin-logout.js"></script>
     <script src="js/admin-detail-tiket.js"></script>
     <script>

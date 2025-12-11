@@ -5,7 +5,19 @@ $departments = [
     "Dinas Perhubungan",
     "Dinas Lingkungan Hidup",
     "Dinas Tata Kota",
-    "Dinas Kebersihan"
+    "Dinas Kebersihan",
+];
+
+$specializations = [
+    'Jalan_Raya' => 'Jalan Raya',
+    'Penerangan_Jalan' => 'Penerangan Jalan',
+    'Drainase' => 'Drainase',
+    'Trotoar' => 'Trotoar',
+    'Taman' => 'Taman & Ruang Terbuka',
+    'Jembatan' => 'Jembatan',
+    'Rambu_Lalu_Lintas' => 'Rambu Lalu Lintas',
+    'Fasilitas_Umum' => 'Fasilitas Umum',
+    'Lainnya' => 'Lainnya',
 ];
 ?>
 <!DOCTYPE html>
@@ -40,7 +52,9 @@ $departments = [
                 </button>
             </header>
             
-            <form id="formPetugasBaru" class="space-y-4">
+            <form id="formPetugasBaru" class="space-y-4" method="post" novalidate>
+
+                <div id="formAlert" class="hidden" role="alert" aria-live="polite"></div>
                 
                 <section class="card bg-white rounded-xl p-6 border border-gray-200">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Informasi Pribadi</h3>
@@ -50,7 +64,7 @@ $departments = [
                             <label for="nama" class="block text-gray-700 mb-2 text-sm">Nama Lengkap <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">person</i>
-                                <input type="text" id="nama" name="name" placeholder="Masukkan nama lengkap petugas" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+                                <input type="text" id="nama" name="full_name" placeholder="Masukkan nama lengkap petugas" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
                             </div>
                         </div>
                         
@@ -69,6 +83,14 @@ $departments = [
                                 <input type="tel" id="telepon" name="phone" placeholder="081234567890" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label for="alamat" class="block text-gray-700 mb-2 text-sm">Alamat Domisili <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <i class="material-icons absolute left-3 top-4 text-gray-400">home</i>
+                                <textarea id="alamat" name="address" rows="3" placeholder="Jl. Danau Toba No. 15" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required></textarea>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -77,10 +99,10 @@ $departments = [
                     <div class="space-y-4">
                         
                         <div class="form-group">
-                            <label for="employeeId" class="block text-gray-700 mb-2 text-sm">Employee ID <span class="text-red-500">*</span></label>
+                            <label for="employeeId" class="block text-gray-700 mb-2 text-sm">Employee ID (opsional)</label>
                             <div class="relative">
                                 <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">work</i>
-                                <input type="text" id="employeeId" name="employeeId" placeholder="EMP-2024-001" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+                                <input type="text" id="employeeId" name="employee_id" placeholder="(Kosongkan untuk generate otomatis)" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
                             </div>
                         </div>
                         
@@ -96,6 +118,32 @@ $departments = [
                                 </select>
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label for="spesialisasi" class="block text-gray-700 mb-2 text-sm">Spesialisasi Lapangan <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">construction</i>
+                                <select id="spesialisasi" name="specialization" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 appearance-none" required>
+                                    <option value="">Pilih Spesialisasi</option>
+                                    <?php foreach ($specializations as $value => $label): ?>
+                                        <option value="<?php echo htmlspecialchars($value); ?>"><?php echo htmlspecialchars($label); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="statusPetugas" class="block text-gray-700 mb-2 text-sm">Status Petugas (Aktif / Nonaktif) <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">radio_button_checked</i>
+                                <select id="statusPetugas" name="officer_status" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 appearance-none" required>
+                                    <option value="">Pilih status petugas</option>
+                                    <option value="aktif">Aktif - Siap Bertugas</option>
+                                    <option value="nonaktif">Nonaktif - Tidak Bertugas</option>
+                                </select>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Pilihan akan dikonversi ke status `tersedia/sibuk` sesuai spesifikasi API-A5-01.</p>
+                        </div>
                     </div>
                 </section>
                 
@@ -107,7 +155,7 @@ $departments = [
                             <label for="password" class="block text-gray-700 mb-2 text-sm">Password <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">lock</i>
-                                <input type="password" id="password" name="password" placeholder="Minimal 6 karakter" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+                                <input type="password" id="password" name="password" placeholder="Minimal 8 karakter" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
                             </div>
                         </div>
                         
@@ -115,7 +163,7 @@ $departments = [
                             <label for="konfirmasiPassword" class="block text-gray-700 mb-2 text-sm">Konfirmasi Password <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">lock</i>
-                                <input type="password" id="konfirmasiPassword" name="confirmPassword" placeholder="Ulangi password" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+                                <input type="password" id="konfirmasiPassword" name="confirm_password" placeholder="Ulangi password" class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
                             </div>
                         </div>
                     </div>
@@ -129,7 +177,7 @@ $departments = [
                     <button type="button" onclick="window.location.href='admin-kelola-petugas.php'" class="flex-1 bg-white border border-gray-300 text-gray-700 py-4 rounded-lg hover:bg-gray-50 font-semibold">
                         Batal
                     </button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-semibold">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-semibold" data-default-text='<i class="material-icons text-xl">person_add</i> Buat Akun Petugas'>
                         <i class="material-icons text-xl">person_add</i> Buat Akun Petugas
                     </button>
                 </div>
@@ -137,6 +185,7 @@ $departments = [
         </div>
     </main>
     <script src="js/admin-logout.js"></script>
+    <script src="js/admin-api.js"></script>
     <script src="js/admin-buat-petugas.js"></script>
 </body>
 </html>

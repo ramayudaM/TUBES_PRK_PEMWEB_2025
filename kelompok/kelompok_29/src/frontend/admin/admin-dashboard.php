@@ -18,9 +18,7 @@
                     <h1 class="text-2xl font-semibold">Manajemen Pengaduan</h1>
                 </div>
                 <div class="flex gap-2">
-                    <a href="admin-edit-profil.php" class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center hover:bg-blue-400 text-xl" title="Edit Profile">
-                        <i class="material-icons">person</i>
-                    </a>
+                    <!-- Profile button temporarily hidden -->
                     <button
                         type="button"
                         class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center hover:bg-blue-400 text-xl"

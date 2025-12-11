@@ -33,7 +33,7 @@
     ticketCategory: document.getElementById('ticketCategory'),
     ticketDescription: document.getElementById('ticketDescription'),
     ticketLocation: document.getElementById('ticketLocation'),
-    ticketMapPlaceholder: document.getElementById('ticketMapPlaceholder'),
+    ticketMap: document.getElementById('ticketMap'),
     reporterName: document.getElementById('reporterName'),
     reporterEmail: document.getElementById('reporterEmail'),
     reporterPhone: document.getElementById('reporterPhone'),
@@ -56,6 +56,10 @@
     proofs: [],
   };
 
+  const mapDefaults = { lat: -6.2, lng: 106.81 };
+  let mapInstance = null;
+  let mapMarker = null;
+
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
@@ -72,6 +76,7 @@
       return;
     }
 
+    initMap();
     fetchTicketDetail();
   }
 
@@ -122,14 +127,14 @@
 
     renderStatusBadge(ticket?.status);
 
-    DOM.ticketImage.src = ticket?.photo_before || 'https://placehold.co/1200x600?text=Tidak+ada+foto';
+    DOM.ticketImage.src = normalizeImageUrl(ticket?.photo_before) || 'https://placehold.co/1200x600?text=Tidak+ada+foto';
     DOM.ticketImage.alt = ticket?.title || 'Foto Pengaduan';
     DOM.ticketTitle.textContent = ticket?.title || 'Tanpa judul';
     DOM.ticketCreatedAt.textContent = formatDate(ticket?.created_at);
     DOM.ticketCategory.textContent = ticket?.category || '-';
     DOM.ticketDescription.textContent = ticket?.description || 'Deskripsi tidak tersedia.';
     DOM.ticketLocation.textContent = ticket?.address || '-';
-    DOM.ticketMapPlaceholder.textContent = ticket?.address || 'Lokasi belum tersedia';
+    handleLocationUpdate(ticket);
 
     DOM.reporterName.textContent = reporter?.name || '-';
     DOM.reporterEmail.textContent = reporter?.email || '-';
@@ -270,7 +275,7 @@
     DOM.proofMeta.textContent = `${records.length} bukti penyelesaian`;
     const cards = records
       .map((proof) => {
-        const img = proof?.photo || 'https://placehold.co/600x400?text=Tidak+ada+foto';
+        const img = normalizeImageUrl(proof?.photo) || 'https://placehold.co/600x400?text=Tidak+ada+foto';
         const note = proof?.notes || 'Tidak ada catatan.';
         const officerName = proof?.officer?.name || '-';
         const submittedAt = formatDateTime(proof?.submitted_at);
@@ -402,6 +407,93 @@
       setPageAlert('error', error?.message || 'Aksi gagal diproses.');
     } finally {
       setButtonLoading(button, false);
+    }
+  }
+
+  function initMap() {
+    if (!DOM.ticketMap || typeof window.L === 'undefined') return;
+    if (mapInstance) return;
+
+    mapInstance = L.map('ticketMap', {
+      attributionControl: false,
+      zoomControl: true,
+    }).setView([mapDefaults.lat, mapDefaults.lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(mapInstance);
+
+  }
+
+  function handleLocationUpdate(ticket) {
+    const lat = ticket?.location?.latitude;
+    const lng = ticket?.location?.longitude;
+    const address = ticket?.address;
+    if (!mapInstance) {
+      initMap();
+    }
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      updateMapAndFields(lat, lng, address);
+      return;
+    }
+    if (address) {
+      geocodeAddress(address).then((result) => {
+        if (result) {
+          const geolat = Number(result.lat);
+          const geolng = Number(result.lon);
+          if (Number.isFinite(geolat) && Number.isFinite(geolng)) {
+            updateMapAndFields(geolat, geolng, result.display_name || address);
+            return;
+          }
+        }
+        updateGeoLabels(null, null, address);
+      });
+      return;
+    }
+    updateGeoLabels(null, null, 'Alamat tidak tersedia.');
+  }
+
+  function updateMapAndFields(lat, lng, displayName) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    if (!mapInstance) {
+      initMap();
+    }
+    updateGeoLabels(lat, lng, displayName);
+    placeMapMarker(lat, lng);
+  }
+
+  function placeMapMarker(lat, lng) {
+    if (!mapInstance || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const coords = [lat, lng];
+    if (mapMarker) {
+      mapMarker.setLatLng(coords);
+    } else {
+      mapMarker = L.marker(coords).addTo(mapInstance);
+    }
+    mapInstance.setView(coords, 15);
+  }
+
+  async function geocodeAddress(query) {
+    if (!query) return null;
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
+        { headers: { Accept: 'application/json' } }
+      );
+      if (!response.ok) return null;
+      const data = await response.json();
+      return Array.isArray(data) && data.length ? data[0] : null;
+    } catch (error) {
+      console.warn('[AdminDetailTicket] geocode error', error);
+      return null;
+    }
+  }
+
+  function updateGeoLabels(lat, lng, description) {
+    if (description && DOM.ticketLocation) {
+      DOM.ticketLocation.textContent = description;
+    } else if (!description && DOM.ticketLocation && !DOM.ticketLocation.textContent) {
+      DOM.ticketLocation.textContent = '-';
     }
   }
 
@@ -606,6 +698,26 @@
 
   function formatStatusText(status) {
     return status ? status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) : '-';
+  }
+
+  function normalizeImageUrl(rawPath) {
+    if (!rawPath) return '';
+    const cleanedPath = rawPath.replace(/\/admin(?=\/uploads)/, '');
+    const backendUrl = resolveBackendBaseUrl();
+    const backendParsed = new URL(backendUrl);
+    try {
+      const parsed = new URL(cleanedPath, backendUrl);
+      parsed.protocol = backendParsed.protocol;
+      parsed.hostname = backendParsed.hostname;
+      const fallbackPort = backendParsed.hostname === 'localhost' ? '9090' : backendParsed.port;
+      parsed.port = fallbackPort || (backendParsed.protocol === 'https:' ? '443' : '80');
+      return parsed.toString();
+    } catch (error) {
+      if (cleanedPath.startsWith('/')) {
+        return `${backendUrl}${cleanedPath}`;
+      }
+      return `${backendUrl}/${cleanedPath}`;
+    }
   }
 
   function getColorClasses(color, isActive) {
