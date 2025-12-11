@@ -1,5 +1,5 @@
 // File: js/admin-kelola_petugas.js
-// Mengintegrasikan logika tabel, filter, dan Modal Detail Petugas (sesuai image_720917.png)
+// Mengintegrasikan logika tabel, filter, dan Modal Detail Petugas
 
 // --- 1. DUMMY DATA ---
 const mockOfficers = [
@@ -104,7 +104,6 @@ function renderPetugasTable(petugas) {
         row.className = 'border-b border-gray-100 hover:bg-gray-50';
         const statusHtml = getStatusBadgeHtml(p.status);
 
-        // PERBAIKAN: Menggunakan JSON.stringify untuk mempassing object Petugas ke handler
         const officerJson = JSON.stringify(p).replace(/"/g, '&quot;');
 
         row.innerHTML = `
@@ -138,16 +137,16 @@ function renderPetugasTable(petugas) {
 
 function closeDetailModal() {
     document.getElementById('detail-modal-container').innerHTML = '';
-    document.body.style.overflow = ''; // Mengembalikan scroll
+    document.body.style.overflow = '';
 }
 
 function showOfficerDetail(officer) {
-    // Data dummy tugas aktif (sesuai image_720917.png)
+    // Data dummy tugas aktif
     const activeTasks = [
         { id: 'TKT-001', title: 'Jalan Berlubang di Jl. Sudirman', status: 'Proses', badge: 'bg-yellow-100 text-yellow-700' },
     ];
     
-    document.body.style.overflow = 'hidden'; // Nonaktifkan scroll
+    document.body.style.overflow = 'hidden'; 
     
     const tasksListHtml = activeTasks.map(task => `
         <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">

@@ -1,6 +1,4 @@
 // File: js/admin-detail-tiket.js
-
-// Ambil data tiket dari window (didefinisikan di tag <script> di admin-detail-tiket.php)
 let ticketData = window.ticketData || {}; 
 
 // --- 1. DUMMY DATA Timeline ---
@@ -49,7 +47,6 @@ function renderTimeline(timeline) {
             </div>
         `;
     });
-    // Menambahkan garis vertikal di awal
     html = `<div class="absolute top-0 bottom-0 left-0 w-0.5 bg-gray-300 ml-1"></div>` + html;
     container.innerHTML = html;
 }
@@ -59,7 +56,6 @@ function renderActionButtons(status) {
     container.innerHTML = '';
     let html = '';
 
-    // Ambil ID tiket dengan aman
     const ticketId = ticketData.id || 'TKT-000';
 
     switch (status) {
@@ -124,11 +120,8 @@ function handleReject(id) {
     }
 }
 
-// Perbaikan: Handler untuk memanggil modal (Mengatasi bug window.ticketData)
 function showOfficerModal(ticketId) {
-    // Memanggil fungsi render modal dari admin-select-officer.js
     if (typeof renderOfficerSelectionModal !== 'undefined') {
-        // Ambil assignedOfficerName dengan aman dari data yang sudah dimuat
         const assignedOfficerName = window.ticketData.assignedOfficer || null; 
         renderOfficerSelectionModal(ticketId, assignedOfficerName);
     } else {
@@ -138,7 +131,6 @@ function showOfficerModal(ticketId) {
 
 // --- 5. EKSEKUSI ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Ambil data tiket global saat DOM siap
     ticketData = window.ticketData || {}; 
     
     if (ticketData && ticketData.status) {

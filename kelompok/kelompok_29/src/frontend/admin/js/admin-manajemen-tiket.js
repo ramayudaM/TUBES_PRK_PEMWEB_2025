@@ -68,7 +68,6 @@ function filterAndRenderTable() {
         const matchesStatus = currentFilterStatus === 'all' || 
                               ticket.status.toLowerCase().replace(/ /g, '_') === currentFilterStatus.toLowerCase().replace(/ /g, '_');
         
-        // **PERBAIKAN KRITIS DI SINI:** Mengganti 'ticket.title' menjadi 'ticket.judul'
         const matchesSearch = ticket.judul.toLowerCase().includes(currentSearchQuery) ||
                               ticket.id.toLowerCase().includes(currentSearchQuery) ||
                               ticket.pelapor.toLowerCase().includes(currentSearchQuery);
@@ -91,9 +90,8 @@ function renderTicketTable(tickets) {
         const statusHtml = getStatusBadgeHtml(ticket.status);
         
         const isAssignable = ticket.status === 'Diajukan' || ticket.status === 'Diverifikasi Admin';
-        const ticketJson = JSON.stringify(ticket).replace(/"/g, '&quot;'); // Escape quotes for HTML handler
+        const ticketJson = JSON.stringify(ticket).replace(/"/g, '&quot;'); 
 
-        // PERBAIKAN: Tombol Assign memanggil showOfficerModalFromTable dengan objek tiket
         const petugasDisplay = ticket.petugas ? 
             `<p class="text-gray-900">${ticket.petugas}</p>` : 
             `<a href="#" class="text-blue-600 hover:underline flex items-center gap-1 text-sm" onclick='showOfficerModalFromTable(${ticketJson}); return false;'><i class="material-icons text-base">person_add</i> Assign</a>`;
@@ -123,7 +121,7 @@ function renderTicketTable(tickets) {
 // Handler baru yang dipanggil dari onclick tabel Manajemen Tiket
 function showOfficerModalFromTable(ticketObj) {
     if (typeof renderOfficerSelectionModal !== 'undefined') {
-        renderOfficerSelectionModal(ticketObj.id, ticketObj.petugas); // Menggunakan ticket.petugas sebagai assignedOfficerName
+        renderOfficerSelectionModal(ticketObj.id, ticketObj.petugas); 
     } else {
         alert('Error: admin-select-officer.js tidak dimuat.');
     }

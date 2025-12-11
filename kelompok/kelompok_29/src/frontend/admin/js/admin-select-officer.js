@@ -17,7 +17,6 @@ function handleSelectOfficer(officer) {
         alert(`Petugas ${officer.name} berhasil ditugaskan ke tiket ${currentTicketId}!`);
         closeOfficerModal();
         
-        // Arahkan ke Detail Tiket agar user dapat melihat pembaruan status
         window.location.href = `admin-detail-tiket.php?id=${currentTicketId}`;
     }
 }
@@ -25,7 +24,7 @@ function handleSelectOfficer(officer) {
 function closeOfficerModal() {
     const modalContainer = document.getElementById('modal-container');
     if (modalContainer) modalContainer.innerHTML = '';
-    document.body.style.overflow = ''; // Mengembalikan scroll body
+    document.body.style.overflow = ''; 
 }
 
 // --- 3. RENDERING MODAL ---

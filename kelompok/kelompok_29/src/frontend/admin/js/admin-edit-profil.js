@@ -27,7 +27,6 @@ document.getElementById('formEditProfile').addEventListener('submit', function(e
 
 
 function displaySuccessNotification(message) {
-    // Menggunakan Tailwind classes untuk notifikasi hijau
     const notif = document.createElement('div');
     notif.className = 'success-notification fixed top-5 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800 border border-green-300 px-6 py-3 rounded-lg font-semibold shadow-lg flex items-center gap-3 z-50';
     notif.innerHTML = `<i class="material-icons text-xl">check_circle</i> ${message}`;
