@@ -22,13 +22,43 @@ $validationTicket = [
     <title>Validasi Penyelesaian #<?php echo htmlspecialchars($ticketId); ?></title>
     <link rel="stylesheet" href="css/style.css"> 
     <link rel="stylesheet" href="css/admin-validasi.css"> 
+    <script src="js/admin-auth-guard.js"></script>
+    <style>
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .btn-logout:hover {
+            background: #fecaca;
+        }
+    </style>
 </head>
 <body>
     
     <div class="header-sticky">
         <div class="container max-w-4xl mx-auto p-4 flex items-center gap-3">
             <a href="admin-detail-tiket.php?id=<?php echo htmlspecialchars($ticketId); ?>" class="back-link">&larr;</a>
-            <h1>Validasi Penyelesaian #<?php echo htmlspecialchars($ticketId); ?></h1>
+            <h1 class="mr-auto">Validasi Penyelesaian #<?php echo htmlspecialchars($ticketId); ?></h1>
+            <button
+                type="button"
+                class="btn-logout"
+                data-admin-logout
+                data-default-text="Logout"
+                data-loading-text="Keluar..."
+            >
+                <span aria-hidden="true">↪</span>
+                <span>Logout</span>
+            </button>
         </div>
     </div>
 
@@ -100,6 +130,7 @@ $validationTicket = [
         </div>
     </main>
 
+    <script src="js/admin-logout.js"></script>
     <script src="js/admin-validasi-selesai.js"></script>
 </body>
 </html>

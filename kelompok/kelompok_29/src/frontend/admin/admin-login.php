@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - Sistem Pengaduan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/admin-auth-guard.js"></script>
     <style>
         /* CSS Tambahan minimal untuk centering */
         .login-page-wrapper { min-height: 100vh; background-color: #f4f6f8; }

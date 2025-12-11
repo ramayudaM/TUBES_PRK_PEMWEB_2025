@@ -24,6 +24,7 @@ $currentTicket = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Tiket #<?php echo htmlspecialchars($ticketId); ?></title>
     <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="js/admin-auth-guard.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         .header-sticky { background-color: white; border-bottom: 1px solid #e9ecef; position: sticky; top: 0; z-index: 10; }
@@ -43,7 +44,19 @@ $currentTicket = [
                 <h1 class="text-2xl font-semibold text-gray-900">Detail Tiket #<?php echo htmlspecialchars($currentTicket['id']); ?></h1>
                 <p class="text-gray-600 text-sm"><?php echo htmlspecialchars($currentTicket['reporterName']); ?></p>
             </div>
-            <div id="statusBadgeContainer"></div>
+            <div class="flex items-center gap-3">
+                <div id="statusBadgeContainer"></div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg border border-red-100 text-sm font-semibold hover:bg-red-100"
+                    data-admin-logout
+                    data-default-text="Logout"
+                    data-loading-text="Keluar..."
+                >
+                    <i class="material-icons text-base">logout</i>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -109,6 +122,7 @@ $currentTicket = [
     
     <div id="modal-container"></div> 
 
+    <script src="js/admin-logout.js"></script>
     <script src="js/admin-detail-tiket.js"></script>
     <script src="js/admin-select-officer.js"></script>
     <script>

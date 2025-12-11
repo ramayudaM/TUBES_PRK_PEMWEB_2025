@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Tiket</title>
     <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="js/admin-auth-guard.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         .badge-kategori { font-size: 12px; }
@@ -17,7 +18,17 @@
             
             <header class="page-header flex items-center gap-4 mb-4 pt-4">
                 <a href="admin-dashboard.php" class="text-xl text-gray-700 hover:text-blue-600 font-semibold">&larr;</a>
-                <h1 class="text-2xl font-semibold text-gray-900">Manajemen Tiket</h1>
+                <h1 class="text-2xl font-semibold text-gray-900 mr-auto">Manajemen Tiket</h1>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg border border-red-100 text-sm font-semibold hover:bg-red-100"
+                    data-admin-logout
+                    data-default-text="Logout"
+                    data-loading-text="Keluar..."
+                >
+                    <i class="material-icons text-base">logout</i>
+                    <span>Logout</span>
+                </button>
             </header>
             
             <section class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-4">
@@ -60,6 +71,7 @@
         </div>
     </main>
 
+    <script src="js/admin-logout.js"></script>
     <script src="js/admin-manajemen-tiket.js"></script>
     <script src="js/admin-select-officer.js"></script>
 </body>

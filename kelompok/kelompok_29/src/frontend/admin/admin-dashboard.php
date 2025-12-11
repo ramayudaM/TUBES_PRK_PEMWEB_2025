@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin</title>
     <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="js/admin-auth-guard.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
@@ -20,9 +21,17 @@
                     <a href="admin-edit-profil.php" class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center hover:bg-blue-400 text-xl" title="Edit Profile">
                         <i class="material-icons">person</i>
                     </a>
-                    <a href="admin-login.php" class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center hover:bg-blue-400 text-xl" title="Logout">
+                    <button
+                        type="button"
+                        class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center hover:bg-blue-400 text-xl"
+                        title="Logout"
+                        data-admin-logout
+                        data-default-text="Logout"
+                        data-loading-text="Keluar..."
+                    >
                         <i class="material-icons">logout</i>
-                    </a>
+                        <span class="sr-only">Logout</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -48,6 +57,7 @@
         </div>
     </main>
     
+    <script src="js/admin-logout.js"></script>
     <script src="js/admin-dashboard.js"></script>
 </body>
 </html>

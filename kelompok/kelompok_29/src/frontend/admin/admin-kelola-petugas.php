@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Petugas</title>
     <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="js/admin-auth-guard.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* CSS tambahan minimal */
@@ -17,10 +18,20 @@
             
             <header class="page-header flex items-center gap-4 mb-6">
                 <a href="admin-dashboard.php" class="text-xl text-gray-700 hover:text-blue-600 font-semibold">&larr;</a>
-                <div>
+                <div class="mr-auto">
                     <h1 class="text-2xl font-semibold text-gray-900">Kelola Petugas</h1>
                     <p class="text-gray-600 text-sm">Manajemen data petugas lapangan</p>
                 </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg border border-red-100 text-sm font-semibold hover:bg-red-100"
+                    data-admin-logout
+                    data-default-text="Logout"
+                    data-loading-text="Keluar..."
+                >
+                    <i class="material-icons text-base">logout</i>
+                    <span>Logout</span>
+                </button>
             </header>
             
             <section class="grid md:grid-cols-3 gap-4 mb-6" id="ringkasan-petugas-container">
@@ -79,6 +90,7 @@
         </div>
     </main>
         <div id="detail-modal-container"></div>
+    <script src="js/admin-logout.js"></script>
     <script src="js/admin-kelola-petugas.js"></script>
 </body>
 </html>
