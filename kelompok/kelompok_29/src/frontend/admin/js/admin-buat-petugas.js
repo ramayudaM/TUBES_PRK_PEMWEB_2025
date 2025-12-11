@@ -107,6 +107,10 @@
       throw new Error('Format email tidak valid.');
     }
 
+    if (!/^[0-9]+$/.test(values.phone)) {
+      throw new Error('Nomor telepon hanya boleh berupa angka.');
+    }
+
     if (values.password.length < MIN_PASSWORD_LENGTH) {
       throw new Error(`Password minimal ${MIN_PASSWORD_LENGTH} karakter.`);
     }

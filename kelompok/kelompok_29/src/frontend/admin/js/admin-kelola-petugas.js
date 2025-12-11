@@ -48,7 +48,7 @@
 
   document.addEventListener('keydown', handleDocumentKeydown);
 
-  const bindEvents = () => {
+  function bindEvents() {
     if (DOM.searchInput) {
       DOM.searchInput.addEventListener('input', (event) => {
         state.search = event.target.value.trim();
@@ -85,7 +85,7 @@
     if (DOM.tableBody) {
       DOM.tableBody.addEventListener('click', handleTableActions);
     }
-  };
+  }
 
   const handleTableActions = (event) => {
     const button = event.target.closest('[data-action="open-officer-detail"]');
@@ -126,7 +126,7 @@
 
       state.page = data?.page ?? state.page;
       state.limit = data?.limit ?? state.limit;
-      state.totalData = typeof data?.total_data === 'number' ? data.total_data : (Array.isArray(data?.records) ? data.records.length : 0);
+      state.totalData = typeof data?.total_data === 'number' ? data.total_data : Array.isArray(data?.records) ? data.records.length : 0;
       const totalPage = typeof data?.total_page === 'number' ? data.total_page : 1;
       state.totalPage = totalPage > 0 ? totalPage : 1;
       state.records = Array.isArray(data?.records) ? data.records : [];
@@ -312,13 +312,13 @@
     document.body.classList.remove('overflow-hidden');
   };
 
-  const handleDocumentKeydown = (event) => {
+  function handleDocumentKeydown(event) {
     if (event.key !== 'Escape') return;
     if (detailRefs.wrapper && !detailRefs.wrapper.classList.contains('hidden')) {
       event.preventDefault();
       closeDetailModal();
     }
-  };
+  }
 
   // Menyusun modal detail hanya sekali saat dibutuhkan.
   const ensureDetailModal = () => {
