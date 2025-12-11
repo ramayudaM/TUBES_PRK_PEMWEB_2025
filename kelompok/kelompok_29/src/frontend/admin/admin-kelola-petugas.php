@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Petugas</title>
     <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="js/admin-auth-guard.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* CSS tambahan minimal */
@@ -17,11 +18,22 @@
             
             <header class="page-header flex items-center gap-4 mb-6">
                 <a href="admin-dashboard.php" class="text-xl text-gray-700 hover:text-blue-600 font-semibold">&larr;</a>
-                <div>
+                <div class="mr-auto">
                     <h1 class="text-2xl font-semibold text-gray-900">Kelola Petugas</h1>
                     <p class="text-gray-600 text-sm">Manajemen data petugas lapangan</p>
                 </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg border border-red-100 text-sm font-semibold hover:bg-red-100"
+                    data-admin-logout
+                    data-default-text="Logout"
+                    data-loading-text="Keluar..."
+                >
+                    <i class="material-icons text-base">logout</i>
+                    <span>Logout</span>
+                </button>
             </header>
+            <div id="pageAlert" class="hidden"></div>
             
             <section class="grid md:grid-cols-3 gap-4 mb-6" id="ringkasan-petugas-container">
                 </section>
@@ -43,9 +55,8 @@
                         class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 appearance-none"
                     >
                         <option value="all">Semua Status</option>
-                        <option value="available">Tersedia</option>
-                        <option value="busy">Sibuk</option>
-                        <option value="offline">Offline</option>
+                        <option value="tersedia">Tersedia</option>
+                        <option value="sibuk">Sedang Bertugas</option>
                     </select>
                 </div>
 
@@ -53,6 +64,14 @@
             </section>
 
             <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div id="tableSkeleton" class="p-6 space-y-4 hidden">
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                        <div class="h-4 bg-gray-100 rounded"></div>
+                        <div class="h-4 bg-gray-100 rounded"></div>
+                        <div class="h-4 bg-gray-100 rounded"></div>
+                    </div>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="data-table w-full text-left">
                         <thead class="bg-gray-50 border-b border-gray-200">
@@ -70,6 +89,12 @@
                     </table>
                 </div>
             </section>
+
+            <div class="flex items-center justify-between mt-4" id="paginationControls">
+                <button id="prevPageBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Sebelumnya</button>
+                <span id="paginationInfo" class="text-sm text-gray-500">Halaman 1 dari 1</span>
+                <button id="nextPageBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Berikutnya</button>
+            </div>
             
             <div id="empty-state" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center mt-4">
                 <i class="material-icons text-6xl text-gray-300 mx-auto mb-4">group</i>
@@ -79,6 +104,8 @@
         </div>
     </main>
         <div id="detail-modal-container"></div>
+    <script src="js/admin-logout.js"></script>
+    <script src="js/admin-api.js"></script>
     <script src="js/admin-kelola-petugas.js"></script>
 </body>
 </html>
